@@ -1,0 +1,34 @@
+---
+apiVersion: rocketmq.apache.org/v1alpha1
+kind: NameService
+metadata:
+  name: {{ .Values.rocketmqNameserver.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  # size is the the name service instance number of the name service cluster
+  size: {{ .Values.rocketmqNameserver.size }}
+  nameServiceImage: "{{ .Values.rocketmqNameserver.nameserverImageName }}:{{ .Values.rocketmqNameserver.nameserverImageTag }}"
+  # imagePullPolicy is the image pull policy
+  imagePullPolicy: {{ .Values.rocketmqNameserver.imagePullPolicy }}
+  # hostNetwork can be true or false
+  hostNetwork: {{ .Values.rocketmqNameserver.hostNetwork }}
+  #  Set DNS policy for the pod.
+  #  Defaults to "ClusterFirst".
+  #  Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+  #  DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy.
+  #  To have DNS options set along with hostNetwork, you have to specify DNS policy
+  #  explicitly to 'ClusterFirstWithHostNet'.
+  dnsPolicy: {{ .Values.rocketmqNameserver.dnsPolicy }}
+  # resources describes the compute resource requirements and limits
+  resources:
+{{ toYaml .Values.rocketmqNameserver.resources | indent 4 }}
+  # storageMode can be EmptyDir, HostPath, StorageClass
+  storageMode: {{ .Values.rocketmqNameserver.storageMode }}
+  # hostPath is the local path to store data
+  hostPath: {{ .Values.rocketmqNameserver.hostPath }}
+  # volumeClaimTemplates defines the storageClass
+  volumeClaimTemplates:
+{{- with .Values.rocketmqNameserver.volumeClaimTemplates }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+

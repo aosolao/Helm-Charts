@@ -1,0 +1,12 @@
+apiVersion: v2
+appVersion: "4.9.4-alpine-operator-0.3.0"
+dependencies:
+description: rocketmq-operator
+type: application
+home: https://github.com/apache/rocketmq-operator
+keywords:
+  - rocketmq
+  - operator
+  - rocketmq-operator
+name: rocketmq-operator
+version: "1.0"

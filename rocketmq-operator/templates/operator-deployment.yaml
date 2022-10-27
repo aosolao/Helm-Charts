@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.rocketmqOperator.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    control-plane: "{{ .Values.rocketmqOperator.name }}"
+    app.kubernetes.io/name: {{ .Values.rocketmqOperator.name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  replicas: {{ .Values.rocketmqOperator.replicas }}
+  selector:
+    matchLabels:
+      name: {{ .Values.rocketmqOperator.name }}
+  template:
+    metadata:
+      annotations:
+      {{- with .Values.rocketmqOperator.podAnnotations }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        name: {{ .Values.rocketmqOperator.name }}
+      {{- with .Values.rocketmqOperator.podLabels }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: "{{ .Values.rocketmqOperator.serviceAccountName }}"
+      terminationGracePeriodSeconds: {{ .Values.rocketmqOperator.terminationGracePeriodSeconds }}
+      containers:
+      - name: "{{ .Values.rocketmqOperator.name }}"
+        # Replace this with the built image name
+        image: "{{ .Values.rocketmqOperator.operatorImageName }}:{{ .Values.rocketmqOperator.operatorImageTag }}"
+        resources:
+{{ toYaml .Values.rocketmqOperator.resources | indent 10 }}
+        command:
+        - /manager
+        args:
+        - --leader-elect
+        imagePullPolicy: {{ .Values.rocketmqOperator.imagePullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        env:
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: "{{ .Values.rocketmqOperator.name }}"
+      priorityClassName: {{ .Values.rocketmqOperator.priorityClassName }}
+      nodeSelector:
+{{- with .Values.rocketmqOperator.nodeSelector }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      affinity: 
+{{- with .Values.rocketmqOperator.affinity }}
+{{ toYaml . | nindent 8 }}
+{{- end }}
+      tolerations:
+{{- if .Values.rocketmqOperator.tolerateAllTaints }}
+        - operator: Exists
+{{- end }}
+{{- with .Values.rocketmqOperator.tolerations }}
+{{ toYaml . | indent 8 }}
+{{- end }}

@@ -1,0 +1,48 @@
+---
+apiVersion: rocketmq.apache.org/v1alpha1
+kind: Broker
+metadata:
+  # name of broker cluster
+  name: {{ .Values.rocketmqBroker.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  # size is the number of the broker cluster, each broker cluster contains a master broker and [replicaPerGroup] replica brokers.
+  size: {{ .Values.rocketmqBroker.size }}
+  # nameServers is the [ip:port] list of name service
+  nameServers: ""
+  # replicaPerGroup is the number of each broker cluster
+  replicaPerGroup: {{ .Values.rocketmqBroker.replicaPerGroup }}
+  brokerImage: "{{ .Values.rocketmqBroker.brokerImageName }}:{{ .Values.rocketmqBroker.brokerImageTag }}"
+  # imagePullPolicy is the image pull policy
+  imagePullPolicy: {{ .Values.rocketmqBroker.imagePullPolicy }}
+  # resources describes the compute resource requirements and limits
+  resources:
+{{ toYaml .Values.rocketmqBroker.resources | indent 4 }}
+  # allowRestart defines whether allow pod restart
+  allowRestart: {{ .Values.rocketmqBroker.allowRestart }}
+  # storageMode can be EmptyDir, HostPath, StorageClass
+  storageMode: {{ .Values.rocketmqBroker.storageMode }}
+  # hostPath is the local path to store data
+  hostPath: {{ .Values.rocketmqBroker.hostPath }}
+  # scalePodName is [Broker name]-[broker group number]-master-0
+  scalePodName: {{ .Values.rocketmqBroker.scalePodName }}
+  # env defines custom env, e.g. BROKER_MEM
+  env:
+    - name: BROKER_MEM
+      valueFrom:
+        configMapKeyRef:
+          name: {{ .Values.ConfigMap.name }}
+          key: BROKER_MEM
+  # volumes defines the broker.conf
+  volumes:
+    - name: broker-config
+      configMap:
+        name: {{ .Values.ConfigMap.name }}
+        items:
+          - key: broker-common.conf
+            path: broker-common.conf
+  # volumeClaimTemplates defines the storageClass
+  volumeClaimTemplates:
+{{- with .Values.rocketmqBroker.volumeClaimTemplates }}
+{{ toYaml . | indent 4 }}
+{{- end }}
