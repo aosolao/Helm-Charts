@@ -24,7 +24,7 @@ spec:
       containers:
       - env:
         - name: JAVA_OPTS
-          value: "{{ .Values.rocketmqConsole.javaOpts }}"
+          value: {{ .Values.rocketmqConsole.javaOpts | quote }}
         image: {{ .Values.rocketmqConsole.consoleImageName }}:{{ .Values.rocketmqConsole.consoleImageTag }}
         imagePullPolicy: {{ .Values.rocketmqConsole.imagePullPolicy }}
         name: {{ .Values.rocketmqConsole.name }}
