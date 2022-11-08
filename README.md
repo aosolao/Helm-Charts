@@ -3,6 +3,7 @@
 
 目前已包含：
 - [rocketmq-operator](./rocketmq-operator)
+- [rocketmq-2m-2s-cluster](./rocketmq-2m-2s-cluster)
 
 ## 使用方法
 1. 将chart复制到本地
