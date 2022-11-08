@@ -1,5 +1,0 @@
-{
-    "yaml.schemas": {
-        "https://json.schemastore.org/helmfile.json": "file:///f%3A/my%20github/Helm-Charts/rocketmq-operator/templates/operator-deployment.yaml"
-    }
-}
