@@ -1,0 +1,19 @@
+{{- if .Values.rocketmqNameserverSvc.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.rocketmqNameserver.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.rocketmqNameserverSvc.type }}
+  selector:
+    name_service_cr: rocketmq-name-server
+  ports:
+    - port: 9876
+      targetPort: 9876
+      # use this port to access the name server cluster
+{{- if (and (eq .Values.rocketmqNameserverSvc.type "NodePort") (not (empty .Values.rocketmqNameserverSvc.nodePort))) }}
+      nodePort: {{ .Values.rocketmqNameserverSvc.nodePort }}
+{{- end }}
+{{- end }}

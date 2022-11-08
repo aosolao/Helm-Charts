@@ -1,0 +1,209 @@
+---
+brokerConfigMap:
+  name: broker-config
+  # BROKER_MEM sets the broker JVM, if set to "" then Xms :  Xmx :  max(min(1/2 ram, 1024MB), min(1/4 ram, 8GB))
+  #BROKER_MEM: " -Xms1638m -Xmx1638m -Xmn256m "
+  BROKER_MEM: " -Xms256m -Xmx256m -Xmn64m "
+  #BROKER_MEM: " -Xms1g -Xmx1g -Xmn256m "
+  # brokerClusterName, brokerName, brokerId 会自动填充，不要手动修改!!!
+  broker_conf:
+    # 删除文件时间点，默认凌晨 4点
+    deleteWhen: 04
+    # 文件保留时间，默认 48 小时
+    fileReservedTime: 72
+    #- ASYNC_FLUSH 异步刷盘
+    #- SYNC_FLUSH 同步刷盘
+    flushDiskType: ASYNC_FLUSH
+    # set brokerRole to ASYNC_MASTER or SYNC_MASTER. DO NOT set to SLAVE because the replica instance will automatically be set!!!
+    brokerRole: ASYNC_MASTER
+    # ACL开关
+    aclEnable: true
+    # 从节点可读
+    slaveReadEnable: true
+    #在发送消息时，自动创建服务器不存在的topic，默认创建的队列数
+    defaultTopicQueueNums: 4
+    #是否允许 Broker 自动创建Topic，建议线下开启，线上关闭
+    autoCreateTopicEnable: false
+    #是否允许 Broker 自动创建订阅组，建议线下开启，线上关闭
+    autoCreateSubscriptionGroup: false
+    #commitLog每个文件的大小默认1G
+    mapedFileSizeCommitLog: 1073741824
+    #ConsumeQueue每个文件默认存30W条，根据业务情况调整
+    mapedFileSizeConsumeQueue: 300000
+    #检测物理文件磁盘空间
+    diskMaxUsedSpaceRatio: 88
+    #限制的消息大小
+    maxMessageSize: 4194304
+    #发消息线程池数量
+    #sendMessageThreadPoolNums: 128
+    #拉消息线程池数量
+    #pullMessageThreadPoolNums: 128
+  plain_acl_yml:
+    globalWhiteRemoteAddresses:
+      - 10.*.*.*
+      - 172.*.*.*
+    accounts:
+      #- accessKey: RocketMQ
+      #  secretKey: 12345678
+      #  whiteRemoteAddress:
+      #  admin: false
+      #  defaultTopicPerm: DENY
+      #  defaultGroupPerm: SUB
+      #  topicPerms:
+      #    - topicA: DENY
+      #    - topicB: PUB|SUB
+      #    - topicC: SUB
+      #  groupPerms:
+          # the group should convert to retry topic
+      #    - groupA: DENY
+      #    - groupB: PUB|SUB
+      #    - groupC: SUB
+      - accessKey: rocketmq2
+        secretKey: 12345678oo
+        whiteRemoteAddress:
+        # if it is admin, it could access all resources
+        admin: true
+  tools_yml:
+    accessKey: rocketmq2
+    secretKey: 12345678oo
+
+rocketmqNameserver:
+  name: name-server
+  imageName: aosolao/rocketmq-nameserver
+  imageTag: 4.9.4-alpine-operator-0.3.0
+  # size is the the name service instance number of the name service cluster
+  replicas: 2
+  terminationGracePeriodSeconds: 30
+  # imagePullPolicy is the image pull policy
+  imagePullPolicy: IfNotPresent
+  #  Set DNS policy for the pod.
+  #  Defaults to "ClusterFirst".
+  #  Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+  #  DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy.
+  #  To have DNS options set along with hostNetwork, you have to specify DNS policy
+  #  explicitly to 'ClusterFirstWithHostNet'.
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+rocketmqNameserverSvc:
+  enabled: true
+  # supported values: "ClusterIP", "ExternalName", "LoadBalancer", "NodePort"
+  type: ClusterIP
+  # 如果需要使用nodePort，则取消注释
+  # nodePort: 30001
+
+rocketmqBrokerA:
+  name: rocketmq-broker-a
+  clusterName: rocketmq-broker
+  # replicaPerGroup is the number of each broker cluster
+  replicaPerGroup: 2
+  imageName:  aosolao/rocketmq-broker
+  imageTag: 4.9.4-alpine-operator-0.3.0
+  # 多个name-server之间使用分号隔开
+  nameServerAddr: "name-server-0.name-server-headless:9876;name-server-1.name-server-headless:9876"
+  # imagePullPolicy is the image pull policy
+  imagePullPolicy: IfNotPresent
+  dnsPolicy: ClusterFirst
+  # resources describes the compute resource requirements and limits
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "300m"
+      memory: "512Mi"
+  storageClassName: local
+  terminationGracePeriodSeconds: 30
+  # volumeClaimTemplates defines the storageClass
+  volumeClaimTemplates:
+    metadata:
+      name: broker-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: local
+      resources:
+        requests:
+          storage: 1Gi
+
+rocketmqBrokerB:
+  name: rocketmq-broker-b
+  clusterName: rocketmq-broker
+  # replicaPerGroup is the number of each broker cluster
+  replicaPerGroup: 2
+  imageName:  aosolao/rocketmq-broker
+  imageTag: 4.9.4-alpine-operator-0.3.0
+  # 多个name-server之间使用分号隔开
+  nameServerAddr: "name-server-0.name-server-headless:9876;name-server-1.name-server-headless:9876"
+  # imagePullPolicy is the image pull policy
+  imagePullPolicy: IfNotPresent
+  dnsPolicy: ClusterFirst
+  # resources describes the compute resource requirements and limits
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "300m"
+      memory: "512Mi"
+  storageClassName: local
+  terminationGracePeriodSeconds: 30
+  # volumeClaimTemplates defines the storageClass
+  volumeClaimTemplates:
+    metadata:
+      name: broker-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: local
+      resources:
+        requests:
+          storage: 1Gi
+
+rocketmqConsole:
+  enabled: false
+  name: rocketmq-console
+  imageName: apacherocketmq/rocketmq-console
+  imageTag: 2.0.0
+  replicas: 1
+  progressDeadlineSeconds: 600
+  terminationGracePeriodSeconds: 30
+  resources: 
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: "100m"
+      memory: 512Mi
+  # supported values: "ClusterIP", "ExternalName", "LoadBalancer", "NodePort"
+  networkType: NodePort
+  nodePort: 30000
+
+serviceMonitor:
+  name: rocketmq-prometheus-monitoring
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  port: rocketmq-exporter
+
+rocketmqExporter:
+  enabled: false
+  name: rocketmq-exporter
+  image: aosolao/rocketmq-exporter
+  tag: latest
+  imagePullPolicy: IfNotPresent
+  rocketmqVersion: 
+  resources: 
+    requests:
+      cpu: 200m
+      memory: 128Mi
+    limits:
+      cpu: "500"
+      memory: 512Mi

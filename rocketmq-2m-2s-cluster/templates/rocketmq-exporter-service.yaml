@@ -1,0 +1,22 @@
+{{- if .Values.rocketmqExporter.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ .Values.rocketmqExporter.name }}
+    app.kubernetes.io/name: {{ .Values.rocketmqExporter.name }}
+  name: {{ .Values.rocketmqExporter.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: {{ .Values.serviceMonitor.port }}
+    port: 5557
+    protocol: TCP
+    targetPort: 5557
+  selector:
+    app.kubernetes.io/instance: {{ .Values.rocketmqExporter.name }}
+    app.kubernetes.io/name: {{ .Values.rocketmqExporter.name }}
+  sessionAffinity: None
+  type: ClusterIP
+{{- end }}
