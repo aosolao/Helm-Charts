@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: {{ .Release.Name }}
+    port: 9141
+    protocol: TCP
+    targetPort: 9141
+  selector:
+    app: zookeeper-exporter
+  sessionAffinity: None
+  type: ClusterIP

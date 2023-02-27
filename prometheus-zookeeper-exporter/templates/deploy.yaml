@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      - args:
+        - --zk-hosts
+        - {{ .Values.zkHosts }}
+        - --listen
+        - "{{ .Values.listenHost }}:{{ .Values.listenPort }}"
+        - --location
+        - "{{ .Values.metricsLocation }}"
+        - --timeout
+        - "{{ .Values.timeout }}"
+        env:
+        - name: TZ
+          value: {{ .Values.timeZone }}
+        name: {{ .Release.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.listenPort }}
+          protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.image.imagePullSecrets }}

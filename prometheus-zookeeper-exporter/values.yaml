@@ -1,0 +1,35 @@
+# 副本数量
+replicaCount: 1
+
+# 镜像信息
+image:
+  repository: "dabealu/zookeeper-exporter"
+  tag: "v0.1.13"
+  pullPolicy: "IfNotPresent"
+  imagePullSecrets: docker-pull-secret
+
+# 填写zk的主机列表，以,逗号分隔
+zkHosts: "zk-0.zk-hs.middleware:2181,zk-1.zk-hs.middleware:2181,zk-2.zk-hs.middleware:2181"
+
+#监听端口
+listenHost: "0.0.0.0"
+listenPort: 9141
+
+metricsLocation: "/metrics"
+
+timeout: 30
+
+# pod资源限制
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 64Mi
+
+timeZone: "Asia/Shanghai"
+
+# node选择器，不需要可置空
+nodeSelector: {}
+
