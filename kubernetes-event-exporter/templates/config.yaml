@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-cfg
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+{{- range $key, $val := .Values.ConfigMap }}
+{{ $val | indent 4}}
+{{- end }}

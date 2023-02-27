@@ -6,7 +6,7 @@
 - [rocketmq-2m-2s-cluster](./rocketmq-2m-2s-cluster)
 - [prometheus-zookeeper-exporter](./prometheus-zookeeper-exporter)
 - [external-etcd-metric](./external-etcd-metric)
-
+- [kubernetes-event-exporter](./kubernetes-event-exporter)
 ## 使用方法
 1. 将chart复制到本地
 

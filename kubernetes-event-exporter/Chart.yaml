@@ -1,0 +1,7 @@
+apiVersion: v2
+appVersion: 1.1
+description: kubernetes-event-exporter
+name: kubernetes-event-exporter
+sources:
+- https://github.com/resmoio/kubernetes-event-exporter
+version: 1.0

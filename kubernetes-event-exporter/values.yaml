@@ -1,0 +1,56 @@
+# 副本数量
+replicaCount: 1
+
+# 镜像信息
+image:
+  repository: "ghcr.io/resmoio/kubernetes-event-exporter"
+  tag: "latest"
+  pullPolicy: "IfNotPresent"
+
+
+# pod资源限制
+resources:
+  limits:
+    cpu: "1"
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# node选择器，不需要可放空
+nodeSelector: {}
+
+imagePullSecrets: docker-pull-secret
+
+
+ConfigMap:
+  config: |-
+    logLevel: error
+    logFormat: json
+    throttlePeriod: 10
+    kubeQPS: 60
+    kubeBurst: 60
+    route:
+      routes:
+        - drop:
+            - namespace: "*test*"
+          match:
+            - kind: "Pod|Deployment"
+              namespace: "kxgc|blockchain|kube-public|kube-system|kube-system|flutter2-build7mfmq|hw-sky-chain982sz|kubesphere-controls-system|kubesphere-monitoring-federated|kubesphere-monitoring-system|kubesphere-system|middleware|wiki"
+              receiver: "dump"
+    receivers:
+      - name: "dump"
+        stdout: 
+          layout:
+            endpoint: "AliYun-test"
+            eventType: "kube-event"
+            createdAt: "{{ .CreationTimestamp }}"
+            type: "{{ .Type }}"
+            reason: "{{ .Reason }}"
+            count: "{{ .Count }}"
+            kind: "{{ .InvolvedObject.Kind }}"
+            name: "{{ .InvolvedObject.Name }}"
+            namespace: "{{ .Namespace }}"
+            component: "{{ .Source.Component }}"
+            host: "{{ .Source.Host }}"
+            message: "{{ .Message }}"
