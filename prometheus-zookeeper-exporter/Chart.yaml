@@ -2,4 +2,4 @@ apiVersion: v2
 appVersion: 0.1.13
 description: Prometheus采集zookeeper
 name: prometheus-zookeeper-exporter
-version: v1.0
+version: 1.0
